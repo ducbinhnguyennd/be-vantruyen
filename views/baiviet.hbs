@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Đăng bài</title>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+        td {
+            text-align: center;
+            max-width: 200px;
+            overflow: hidden;
+        }
+        .modal-dialog {
+            max-height: 80vh;
+        }
+
+
+        .scrollable-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            
+           
+
+        }
+    </style>
+</head>
+
+<body style="font-family: Arial, sans-serif;margin: 0;background-color: #f4f4f4;">
+    <div id="container" class="jumbotron">
+        <h2 style="text-align: center;">Đăng Bài Viết</h2>
+        <div style="display: flex;flex-direction: column;" class="post-form">
+            <input
+                style="resize: none;padding:10px;margin-bottom: 10px;border: 1px solid #ccc;border-radius: 20px;font-size: 16px;"
+                placeholder="Bạn đang nghĩ gì?" id="postContent">
+        </div>
+        <div class="table-data">
+            <div class="order">
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th style="text-align: center;">Content</th>
+                            <th style="text-align: center;">Like</th>
+                            <th style="text-align: center;">Comment</th>
+                            <th style="text-align: center;">Date</th>
+                            <th style="text-align: center;">Detail</th>
+                            <th style="text-align: center;">Option</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {{#each baiviet}}
+                        <tr>
+                            <td style="text-align: center; ">{{this.content}}</td>
+                            <td style="text-align: center;">{{this.like}}</td>
+                            <td style="text-align: center;">{{this.comment}}</td>
+                            <td style="text-align: center;">{{this.date}}</td>
+                            <td>
+                                <button class="btn btn-info report-detail-button"
+                                    style="width: 100px; height: 30px; margin-top: 5px; background-color: #33b2fc; border: none; border-radius: 5px; color: white;"
+                                    type="submit" data-manga-id="{{this._id}}">Chi tiết</button>
+                            </td>
+                            <td>
+                                <form style="margin-top: 10px;" action="/deletebaiviet/{{this._id}}"
+                                    onclick="return confirm('Bạn có muốn xóa người dùng này?" method="post">
+                                    <button
+                                        style="width: 100px; height: 30px; margin-top: 5px; background-color: #f50d0d; border: none; border-radius: 5px; color: white;"
+                                        type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <!--Modal Bai Viet -->
+                        <div class="modal fade" id="reportmodal_{{this._id}}" tabindex="-1" role="dialog"
+                            aria-labelledby="reportmodalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="reportmodalLabel">Thông tin bài viết</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body scrollable-body">
+                                        <img style=" width: 50px;height: 50px;border-radius: 50%;overflow: hidden;"
+                                            class="text-center" id="avatar_{{this._id}}">
+                                        <h4 class="text-center" style="display: inline-block;margin-left: 10px;"
+                                            id="username_{{this._id}}">
+                                        </h4>
+                                        <p class="text-center" style="margin-top: 5px;" id="date_{{this._id}}"></p>
+                                        <p class="text-center" style="font-size: 20px;margin-top: 10px;"
+                                            id="contents_{{this._id}}"></p>
+                                        <div class="text-center" id="images_{{this._id}}"></div>
+                                        <hr style="margin: 15px 0; border-top: 1px solid #ccc;">
+                                        <div class="text-center" style="width: 100%;display: flex; justify-content: center;">
+                                            <i class='bx bxs-comment-dots' style="font-size: 30px;"></i>
+                                            <p style="font-size: 20px; display: inline-block; margin-left: 7px;">Bình luận</p>
+                                        </div>
+                                        <hr style="margin: 15px 0; border-top: 1px solid #ccc;">
+                                        <div class="commentsSection">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer fixed-footer">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control commentInput"
+                                                placeholder="Viết bình luận" required>
+                                            <div class="input-group-append">
+                                                <i class='bx bx-send input-group-text postCommentBtn'
+                                                    style="cursor: pointer;" data-manga-id="{{this._id}}"></i>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+            {{/each}}
+            </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="myModal">Thêm bài viết</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="/postbaiviet" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="postcontent">content:</label>
+                            <input type="text" class="form-control" id="postcontent" name="content" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="file" class="form-control" id="images" name="images" multiple>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-primary" id="saveCategoryButton">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+    <script>
+        function postcmt() {
+            const postCommentBtns = document.querySelectorAll('.postCommentBtn');
+
+            postCommentBtns.forEach(button => {
+                button.addEventListener('click', function () {
+                    const mangaId = this.getAttribute('data-manga-id');
+                    const modalId = `#reportmodal_${mangaId}`;
+                    const commentInput = document.querySelector(`${modalId} .commentInput`);
+                    const comment = commentInput.value;
+
+                    fetch(`/postcmtbaiviet/${mangaId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ comment }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            getAndDisplayComments(mangaId);
+                            commentInput.value = '';
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi gửi bình luận:', error);
+                            alert('Đã xảy ra lỗi khi gửi bình luận.');
+                        });
+                });
+            });
+        }
+
+
+        function getAndDisplayComments(mangaId) {
+            const commentsSection = document.querySelectorAll('.commentsSection');
+
+            fetch(`/getcmtbaiviet/${mangaId}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    commentsSection.forEach(commentsSection => {
+                        commentsSection.innerHTML = '';
+
+                        data.forEach(comment => {
+                            const newCommentDiv = document.createElement('div');
+                            newCommentDiv.innerHTML = `<div style="margin-top: 20px; display: flex;">
+    <img style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; display: inline-block;" src="data:image/jpeg;base64,${comment.avatar}" alt="Images">
+    <div style="padding: 10px; background: #ccc; width: 80%; height: auto; border-radius: 10px; margin-left: 10px; display: flex; flex-direction: column;">
+        <h6 style="margin-left: 5px; margin-bottom: 0;">${comment.username}</h6>
+        <p style="margin-left: 5px; margin-top: 0;">${comment.cmt}</p>
+    </div>
+</div>`;
+                            commentsSection.appendChild(newCommentDiv);
+                        });
+                    })
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy danh sách bình luận:', error);
+                    alert('Đã xảy ra lỗi khi lấy danh sách bình luận.');
+                });
+
+        }
+
+        function baivietmodal() {
+            const reportdetailbutton = document.querySelectorAll('.report-detail-button');
+
+            reportdetailbutton.forEach(button => {
+                button.addEventListener('click', function (event) {
+                    const mangaId = this.getAttribute('data-manga-id');
+                    fetch(`/baivietreport/${mangaId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data) {
+                                const iconSpan = document.createElement('span');
+                                iconSpan.innerHTML = data.content;
+                                const finalContent = iconSpan.innerHTML;
+                                document.getElementById(`contents_${mangaId}`).textContent = finalContent;
+                                const avatarImg = document.getElementById(`avatar_${mangaId}`);
+                                avatarImg.src = `data:image/jpeg;base64,${data.avatar}`; // Hiển thị avatar từ base64
+                                document.getElementById(`username_${mangaId}`).textContent = data.username;
+                                document.getElementById(`date_${mangaId}`).textContent = data.date;
+                                const imagesDiv = document.getElementById(`images_${mangaId}`);
+
+                                // Kiểm tra nếu có hình ảnh
+                                if (data.images && data.images.length > 0) {
+                                    imagesDiv.style.display = 'block'; // Hiển thị thẻ images
+
+                                    // Tạo các thẻ img để hiển thị từng ảnh trong mảng
+                                    const imagesHtml = data.images.map(img => `<img style="width: 80%;height: auto;border-radius: 0;" id="image" src="data:image/jpeg;base64,${img}" alt="Images">`).join('');
+
+                                    imagesDiv.innerHTML = imagesHtml; // Thêm hình ảnh vào thẻ
+                                } else {
+                                    imagesDiv.style.display = 'none'; // Ẩn thẻ images
+                                }
+
+                                $(`#reportmodal_${mangaId}`).modal('show');
+                                getAndDisplayComments(mangaId)
+                            } else {
+                                alert('Dữ liệu từ API không đầy đủ hoặc không hợp lệ.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi lấy thông tin bài viết:', error);
+                            alert('Đã xảy ra lỗi khi khi lấy thông tin bài viết.');
+                        });
+                });
+            });
+        }
+        $(document).ready(function () {
+            $("#postContent").click(function () {
+                $("#myModal").modal("show");
+            });
+
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            postcmt()
+            baivietmodal();
+        }); 
+    </script>
+
+</body>
+
+</html>
