@@ -43,8 +43,8 @@ router.post('/pay/:_userId', async (req, res) => {
         }
       ],
       redirect_urls: {
-        return_url: `http://du-an-2023.vercel.app/success/${paymentData._id}`,
-        cancel_url: `http://du-an-2023.vercel.app/cancel`
+        return_url: `https://be-vantruyen.vercel.app/success/${paymentData._id}`,
+        cancel_url: `https://be-vantruyen.vercel.app/cancel`
       }
     }
 
