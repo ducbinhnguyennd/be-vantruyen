@@ -8,9 +8,9 @@ const Payment = require('../models/PaymentModel')
 paypal.configure({
   mode: 'sandbox',
   client_id:
-    'AXVdpjuiIVdfBGFqRA6k-mJVl3A-ZU4Z2hgnXnOUKfx1FMdvN75esad5Qc8l799qBT9CgGvvSBSShXMv',
+    'AcbjyBYvtzo-AAFInnvDR-1Q1No93loj45abu86uTx_7z5pO9gMT8UOUxBVSCDeAdjExHR6zmo9EIddv',
   client_secret:
-    'EM-ZdY6iJkCCb2Y0YUXPlV3h5txunkGGhzqHh9HFbvpIER95XMCFuTxQ3axG4pK49p0w_cDnwhvHAmpf'
+    'ECKZTF9b2khQ39W47YGtPxa6f41G3MoUf6nNKKVepoUFdL8rmI0EoY7XE-m5uPYaNZFihEmk_cQaSALJ'
 })
 
 router.post('/pay/:_userId', async (req, res) => {
