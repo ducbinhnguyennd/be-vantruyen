@@ -6,7 +6,7 @@ const momenttimezone = require('moment-timezone')
 const Payment = require('../models/PaymentModel')
 
 paypal.configure({
-  mode: 'live',
+  mode: 'sandbox',
   client_id:
     'AXVdpjuiIVdfBGFqRA6k-mJVl3A-ZU4Z2hgnXnOUKfx1FMdvN75esad5Qc8l799qBT9CgGvvSBSShXMv',
   client_secret:
