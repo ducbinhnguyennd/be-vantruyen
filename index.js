@@ -51,7 +51,7 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(methodOverride('_method'))
 
 const uri =
-  'mongodb+srv://ducbinhnguyennd:apptruyen123@cluster0.sck9o.mongodb.net/apptruyen?retryWrites=true&w=majority'
+  'mongodb+srv://ducbinhnguyennd:Kob7KkDcV3ImKe6W@cluster0.sck9o.mongodb.net/apptruyen?retryWrites=true&w=majority'
 
 mongoose
   .connect(uri, {
