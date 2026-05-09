@@ -4,6 +4,8 @@ const cheerio = require('cheerio')
 const Manga = require('../models/MangaModel')
 const Chapter = require('../models/ChapterModel')
 const Notification = require('../models/NotifyModel')
+const LichSuCoin = require('../models/LichSuCoinModel')
+const lichsucoin = require('../models/LichSuCoinModel')
 
 router.get('/getchap', async (req, res) => {
   try {
@@ -190,9 +192,10 @@ router.post('/purchaseChapter/:userId/:chapterId', async (req, res) => {
   try {
     const { userId, chapterId } = req.params
 
-    // Kiểm tra người dùng và chương có tồn tại hay không
     const user = await User.findById(userId)
     const chapter = await Chapter.findById(chapterId)
+    const manga = await Manga.findOne({ manganame: chapter.mangaName })
+    const nhomdich = await User.findById(manga.userID)
 
     if (!user || !chapter) {
       return res
@@ -217,6 +220,38 @@ router.post('/purchaseChapter/:userId/:chapterId', async (req, res) => {
     }
 
     user.coin -= chapterPrice
+
+    const translatorCoin = Math.floor(chapterPrice * 0.7)
+    nhomdich.coin += translatorCoin
+
+    const lichsucoinuser = new LichSuCoin({
+      content: `Mua chapter ${chapter.number} truyện ${chapter.mangaName}`,
+      coin: chapterPrice,
+      user: user._id,
+      method: 'sub',
+      chap: chapter._id,
+      manga: manga._id,
+      date: new Date()
+    })
+
+    const lichsucoinnhomdich = new LichSuCoin({
+      content: `Cộng coin user mua chapter ${chapter.number} truyện ${chapter.mangaName}`,
+      coin: translatorCoin,
+      user: nhomdich._id,
+      method: 'add',
+      chap: chapter._id,
+      manga: manga._id,
+      date: new Date()
+    })
+
+    await lichsucoinuser.save()
+    await lichsucoinnhomdich.save()
+
+    user.lichsucoin.push(lichsucoinuser._id)
+    nhomdich.lichsucoin.push(lichsucoinnhomdich._id)
+
+    await nhomdich.save()
+
     await user.save()
 
     const purchasedChapter = {
@@ -235,6 +270,43 @@ router.post('/purchaseChapter/:userId/:chapterId', async (req, res) => {
     res.status(500).json({ error: 'Đã xảy ra lỗi khi mua chương' })
   }
 })
+
+router.post('/rutcoin/:userid', async (req, res) => {
+  try {
+    const userid = req.params.userid
+    const { coin } = req.body
+    const nhomdich = await User.findById(userid)
+
+    if (nhomdich.banking.length === 0) {
+      return res
+        .status(400)
+        .json({ message: 'Bạn chưa tích hợp tài khoản ngân hàng' })
+    }
+    if (parseFloat(coin) > nhomdich.coin) {
+      return res.status(400).json({ message: 'Không đủ coin để rút' })
+    }
+    nhomdich.coin -= parseFloat(coin)
+
+    const lichsucoinnhomdich = new LichSuCoin({
+      content: `Rút Coin`,
+      coin: coin,
+      user: nhomdich._id,
+      method: 'sub',
+      date: new Date()
+    })
+    nhomdich.lichsucoin.push(lichsucoinnhomdich._id)
+
+    await lichsucoin.save()
+    await nhomdich.save()
+
+    res.status(200).json({ message: 'Rút tiền thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/')
 
 router.post('/chapters', async (req, res) => {
   try {

@@ -10,10 +10,20 @@ const storage = multer.memoryStorage()
 
 const upload = multer({ storage: storage })
 
+router.get('/getfulluser', async (req, res) => {
+  try {
+    const user = await User.find().lean()
+    res.json(user)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 router.post('/register', async (req, res) => {
   try {
     const { username, password, role, phone } = req.body
-    console.log('u',username,password,phone )
+    console.log('u', username, password, phone)
     // Kiểm tra số điện thoại
     if (!phone || !/^\d{10}$/.test(phone)) {
       return res.status(400).json({ message: 'Số điện thoại không hợp lệ' })
