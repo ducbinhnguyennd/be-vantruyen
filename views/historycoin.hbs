@@ -15,9 +15,14 @@
 
 <body>
     <div class="jumbotron text-center">
-        <h1>History Coin</h1>
+        <h1>
+            {{#if isAdmin}}
+            Withdraw Coin
+            {{else}}
+            History Coin
+            {{/if}}
+        </h1>
         <hr>
-        <h2>Lịch sử</h2>
         <div class="table-data">
             <div class="order">
                 <table class="table">
