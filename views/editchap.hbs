@@ -19,11 +19,11 @@
                 <select class="col-lg-4" id="mangaName" name="mangaName">
                     <option value="{{data.mangaName}}">{{data.mangaName}}</option>
                     <script>
-                        $(document).ready(function () {
-                            $.get('/getmanga', function (manga) {
-                                if (manga && manga.length > 0) {
-                                    manga.forEach(function (manga) {
-                                        $('#mangaName').append($('<option>', {
+                        $(document).ready(function() {
+                            $.get('/getmanga',function(manga) {
+                                if(manga&&manga.length>0) {
+                                    manga.forEach(function(manga) {
+                                        $('#mangaName').append($('<option>',{
                                             value: manga.manganame,
                                             text: manga.manganame
                                         }));
@@ -50,11 +50,11 @@
                 </select>
 
                 <script>
-                    $(document).ready(function () {
-                        $.get('/viporfrees', function (data) {
-                            if (data && data.length > 0) {
-                                data.forEach(function (viporfreeValue) {
-                                    $('#viporfree').append($('<option>', {
+                    $(document).ready(function() {
+                        $.get('/viporfrees',function(data) {
+                            if(data&&data.length>0) {
+                                data.forEach(function(viporfreeValue) {
+                                    $('#viporfree').append($('<option>',{
                                         value: viporfreeValue,
                                         text: viporfreeValue
                                     }));
@@ -66,10 +66,9 @@
             </div><br>
             <div class="row">
                 <span class="col-lg-2"></span>
-                <label class="col-lg-2">Chapter Image: </label>
-                <textarea class="col-lg-4" required id="images" name="images"
-                    placeholder="Nhập các liên kết ảnh, mỗi liên kết trên một dòng" rows="10"
-                    cols="30">{{data.images}}</textarea>
+                <label class="col-lg-2">Content: </label>
+                <textarea class="col-lg-4" required id="content" name="content" placeholder="Nhập nội dung chap"
+                    rows="10" cols="30">{{data.content}}</textarea>
             </div><br>
 
 
