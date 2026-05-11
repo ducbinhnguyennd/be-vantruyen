@@ -274,39 +274,115 @@ router.post('/purchaseChapter/:userId/:chapterId', async (req, res) => {
 router.post('/rutcoin/:userid', async (req, res) => {
   try {
     const userid = req.params.userid
-    const { coin } = req.body
+    const coin = parseFloat(req.body.coin)
+
     const nhomdich = await User.findById(userid)
 
+    if (!nhomdich) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy user'
+      })
+    }
+
+    if (isNaN(coin) || coin <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coin không hợp lệ'
+      })
+    }
+
     if (nhomdich.banking.length === 0) {
-      return res
-        .status(400)
-        .json({ message: 'Bạn chưa tích hợp tài khoản ngân hàng' })
+      return res.status(400).json({
+        success: false,
+        message: 'Bạn chưa tích hợp tài khoản ngân hàng'
+      })
     }
-    if (parseFloat(coin) > nhomdich.coin) {
-      return res.status(400).json({ message: 'Không đủ coin để rút' })
+
+    if (coin > nhomdich.coin) {
+      return res.status(400).json({
+        success: false,
+        message: 'Không đủ coin để rút'
+      })
     }
-    nhomdich.coin -= parseFloat(coin)
+
+    nhomdich.coin -= coin
 
     const lichsucoinnhomdich = new LichSuCoin({
-      content: `Rút Coin`,
+      content: 'Rút Coin',
       coin: coin,
       user: nhomdich._id,
       method: 'sub',
       date: new Date()
     })
+
+    await lichsucoinnhomdich.save()
+
     nhomdich.lichsucoin.push(lichsucoinnhomdich._id)
 
-    await lichsucoin.save()
     await nhomdich.save()
 
-    res.status(200).json({ message: 'Rút tiền thành công' })
+    return res.status(200).json({
+      success: true,
+      message: 'Rút tiền thành công'
+    })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+
+    return res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi.'
+    })
   }
 })
 
-router.get('/')
+router.post('/duyetrutien/:lsid', async (req, res) => {
+  try {
+    const lsid = req.params.lsid
+    const lichsu = await LichSuCoin.findById(lsid)
+    lichsu.status = 1
+    await lichsu.save()
+    res.redirect('/admin')
+  } catch (error) {
+    console.error(error)
+
+    return res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi.'
+    })
+  }
+})
+
+router.post('/huyrutien/:lsid', async (req, res) => {
+  try {
+    const lsid = req.params.lsid
+    const lichsu = await LichSuCoin.findById(lsid)
+    const user = await User.findById(lichsu.user)
+    lichsu.status = -1
+
+    const lichsucoinnhomdich = new LichSuCoin({
+      content: 'Hoàn lại Coin do hủy lệnh rút',
+      coin: lichsu.coin,
+      user: user._id,
+      method: 'add',
+      date: new Date()
+    })
+    await lichsucoinnhomdich.save()
+    user.coin += lichsu.coin
+    user.lichsucoin.push(lichsucoinnhomdich._id)
+    await user.save()
+
+    await lichsu.save()
+    res.redirect('/admin')
+  } catch (error) {
+    console.error(error)
+
+    return res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi.'
+    })
+  }
+})
 
 router.post('/chapters', async (req, res) => {
   try {

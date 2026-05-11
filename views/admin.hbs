@@ -697,6 +697,12 @@
 					<span class="text">Revenue Management</span>
 				</a>
 			</li>
+			<li>
+				<a id="historyManagerLink" href="#historyManagerLink">
+					<i class='bx bx-time-five'></i>
+					<span class="text">History Coin Manager</span>
+				</a>
+			</li>
 
 		</ul>
 		<ul class="side-menu">
@@ -871,6 +877,24 @@
 				});
 			})
 			.catch(error => console.error('Đã xảy ra lỗi:',error));
+
+
+
+			
+
+		const historyManagerLink=document.getElementById('historyManagerLink');
+
+
+		historyManagerLink.addEventListener("click",function(event) {
+			event.preventDefault();
+			fetch('/historyscreen')
+				.then(response => response.text())
+				.then(data => {
+					const mainContent=document.querySelector("#content main");
+					mainContent.innerHTML=data;
+				})
+				.catch(error => console.error('Đã xảy ra lỗi:',error));
+		});
 
 		const mangaManagerLink=document.getElementById('mangaManagerLink');
 

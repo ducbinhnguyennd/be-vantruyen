@@ -576,6 +576,73 @@
 			margin-bottom: 0;
 		}
 
+		/* ===== Coin Box ===== */
+		.coin-box {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			margin-left: auto;
+			margin-right: 20px;
+		}
+
+		/* Số coin */
+		.coin-balance {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 16px;
+			background: linear-gradient(135deg, #ffcc00, #ff9900);
+			color: white;
+			border-radius: 14px;
+			font-weight: 600;
+			font-size: 14px;
+			box-shadow: 0 4px 12px rgba(255, 153, 0, 0.35);
+			transition: 0.3s;
+		}
+
+		.coin-balance i {
+			font-size: 20px;
+		}
+
+		/* Hover */
+		.coin-balance:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 18px rgba(255, 153, 0, 0.45);
+		}
+
+		/* Nút rút coin */
+		.withdraw-btn {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 18px;
+			border: none;
+			border-radius: 14px;
+			background: linear-gradient(135deg, #4f46e5, #7c3aed);
+			color: white;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+		}
+
+		.withdraw-btn i {
+			font-size: 18px;
+		}
+
+		.withdraw-btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+			background: linear-gradient(135deg, #4338ca, #6d28d9);
+		}
+
+		/* Responsive */
+		@media screen and (max-width: 768px) {
+			.coin-box {
+				display: none;
+			}
+		}
+
 		/* MAIN */
 		/* CONTENT */
 
@@ -646,7 +713,6 @@
 
 <body>
 
-
 	<!-- SIDEBAR -->
 	<section id="sidebar">
 		<a href="#" class="brand">
@@ -655,7 +721,7 @@
 		</a>
 		<ul class="side-menu top">
 			<li class="active">
-				<a href="">
+				<a href>
 					<i class='bx bxs-dashboard'></i>
 					<span class="text">Dashboard</span>
 				</a>
@@ -684,6 +750,12 @@
 					<span class="text">Baiviet Manager</span>
 				</a>
 			</li>
+			<li>
+				<a id="historyManagerLink" href="#historyManagerLink">
+					<i class='bx bx-time-five'></i>
+					<span class="text">History Coin Manager</span>
+				</a>
+			</li>
 		</ul>
 		<ul class="side-menu">
 			<li>
@@ -702,28 +774,51 @@
 	</section>
 	<!-- SIDEBAR -->
 
-
-
 	<!-- CONTENT -->
 	<section id="content">
 		<!-- NAVBAR -->
 		<nav>
-			<i class='bx bx-menu'></i>
-			<a href="#" class="nav-link">Manager</a>
+			<i class="bx bx-menu"></i>
+			<a href="#" class="nav-link">
+				Manager
+			</a>
+
 			<form action="#">
 				<div class="form-input">
-					<input type="search" placeholder="Search...">
-					<button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+					<input type="search" placeholder="Search..." />
+					<button type="submit" class="search-btn">
+						<i class="bx bx-search"></i>
+					</button>
 				</div>
 			</form>
-			<input type="checkbox" id="switch-mode" hidden>
+
+			<!-- Coin Box -->
+			<div class="coin-box">
+				<div class="coin-balance">
+					<i class="bx bxs-coin-stack"></i>
+					<span>
+						{{user.coin}}
+					</span>
+				</div>
+
+				<button class="withdraw-btn" id="ruttienButton">
+					<i class="bx bx-wallet"></i>
+					Rút Coin
+				</button>
+			</div>
+
+			<input type="checkbox" id="switch-mode" hidden />
 			<label for="switch-mode" class="switch-mode"></label>
+
 			<a href="#" class="notification" data-toggle="modal" data-target="#notificationModal">
-				<i class='bx bxs-bell'></i>
-				<span class="num">8</span>
+				<i class="bx bxs-bell"></i>
+				<span class="num">
+					8
+				</span>
 			</a>
+
 			<a href="#" class="profile">
-				<img src="data:image/jpeg;base64,{{user.avatar}}">
+				<img src="data:image/jpeg;base64,{{user.avatar}}" />
 			</a>
 		</nav>
 		<!-- NAVBAR -->
@@ -746,7 +841,8 @@
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
 						<button type="button" class="btn btn-danger" id="deleteSelectedButton" style="display: none">Xóa
 							đã chọn</button>
-						<button type="button" class="btn btn-secondary" id="selectAllButton">Chọn tất cả</button>
+						<button type="button" class="btn btn-secondary" id="selectAllButton">Chọn
+							tất cả</button>
 					</div>
 				</div>
 			</div>
@@ -791,47 +887,100 @@
 				</div>
 			</div>
 
-			<div class="modal fade" id="rutcoin" tabindex="-1" role="dialog" aria-labelledby="rutcoinLabel"
-				aria-hidden="true">
-				<div class="modal-dialog" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="rutcoinLabel">
-								Rút tiền
-							</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">
-									&times;
-								</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<form id="addCategoryForm" method="post" action="/rutcoin?userId={{user._id}}">
-								<div class="form-group">
-									<label for="username">
-										coin quy đổi:
-									</label>
-									<input type="text" class="form-control" id="username" name="username"
-										placeholder="Nhập số coin" />
-								</div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-dismiss="modal">
-										Đóng
-									</button>
-									<button type="submit" class="btn btn-primary" id="saveCategoryButton">
-										Lưu
-									</button>
-								</div>
-							</form>
-						</div>
+
+		</main>
+		<!-- MAIN -->
+		<div class="modal fade" id="rutcoin" tabindex="-1" role="dialog" aria-labelledby="rutcoinLabel"
+			aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="rutcoinLabel">
+							Rút tiền
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">
+								&times;
+							</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="rutCoinForm">
+							<div class="form-group">
+								<label for="username">
+									1 coin = 1000 VNĐ
+								</label>
+								<input type="text" class="form-control" id="coinInput" name="coin"
+									placeholder="Nhập số coin" />
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">
+									Đóng
+								</button>
+								<button type="submit" class="btn btn-primary" id="saveCategoryButton">
+									Lưu
+								</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
-		</main>
-		<!-- MAIN -->
+		</div>
 	</section>
 	<!-- CONTENT -->
 	<script>
+		document.getElementById("rutCoinForm").addEventListener("submit",async function(e) {
+
+			e.preventDefault();
+
+			const coin=document.getElementById("coinInput").value;
+
+			try {
+
+				const response=await fetch("/rutcoin/{{user._id}}",{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({coin}),
+				});
+
+				const data=await response.json();
+
+				if(data.success) {
+
+					// alert thành công
+					alert("Rút coin thành công!");
+
+					// đóng modal bootstrap
+					$('#rutcoin').modal('hide');
+
+					// reset form
+					document.getElementById("rutCoinForm").reset();
+					window.location.reload();
+
+				} else {
+					alert(data.message||"Rút coin thất bại!");
+				}
+
+			} catch(error) {
+				console.log(error);
+				alert("Có lỗi xảy ra!");
+			}
+		});
+	</script>
+	<script>
+		document.getElementById('ruttienButton').addEventListener('click',function(e) {
+			e.preventDefault();
+			$('#rutcoin').modal('show');
+		});
+		function setruttien() {
+			document.getElementById('ruttienButton').onclick=function(e) {
+				e.preventDefault();
+				$('#rutcoin').modal('show');
+			};
+		}
+
 		const allSideMenu=document.querySelectorAll('#sidebar .side-menu.top li a');
 
 		allSideMenu.forEach(item => {
@@ -924,6 +1073,7 @@
 				.then(data => {
 					const mainContent=document.querySelector("#content main");
 					mainContent.innerHTML=data;
+					setruttien()
 					window.location.href='#mangaManagerLink';
 				})
 				.catch(error => console.error('Đã xảy ra lỗi:',error));
@@ -937,6 +1087,7 @@
 				.then(data => {
 					const mainContent=document.querySelector("#content main");
 					mainContent.innerHTML=data;
+					setruttien()
 					setupChapterPage();
 				})
 				.catch(error => console.error('Đã xảy ra lỗi:',error));
@@ -984,10 +1135,13 @@
 				.then(data => {
 					const mainContent=document.querySelector("#content main");
 					mainContent.innerHTML=data;
+					setruttien()
 					setcategory();
 				})
 				.catch(error => console.error('Đã xảy ra lỗi:',error));
 		});
+
+
 
 		function setcategory() {
 			$(document).ready(function() {
@@ -1174,6 +1328,19 @@
 
 			});
 		}
+		const historyManagerLink=document.getElementById('historyManagerLink');
+
+
+		historyManagerLink.addEventListener("click",function(event) {
+			event.preventDefault();
+			fetch('/historyscreen')
+				.then(response => response.text())
+				.then(data => {
+					const mainContent=document.querySelector("#content main");
+					mainContent.innerHTML=data;
+				})
+				.catch(error => console.error('Đã xảy ra lỗi:',error));
+		});
 		function postcmt() {
 			const postCommentBtns=document.querySelectorAll('.postCommentBtn');
 

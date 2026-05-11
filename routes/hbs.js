@@ -6,6 +6,7 @@ const Manga = require('../models/MangaModel')
 const Chapter = require('../models/ChapterModel')
 const Baiviet = require('../models/BaiVietModel')
 const User = require('../models/UserModel')
+const LichSuCoin = require('../models/LichSuCoinModel')
 const cheerio = require('cheerio')
 
 const checkAuth = (req, res, next) => {
@@ -204,6 +205,83 @@ router.get('/categoryscreen', async (req, res) => {
     }
     const category = await Category.find()
     res.render('category', { category, user })
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách thể loại:', error)
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi lấy danh sách thể loại' })
+  }
+})
+
+router.get('/historyscreen', async (req, res) => {
+  try {
+    const userId = req.session.userId
+    const user = await User.findById(userId)
+    if (!user) {
+      res.status(403).json({ message: 'không tìm thấy user' })
+    }
+    let history = await LichSuCoin.find({
+      content: 'Rút Coin',
+      $or: [{ status: 0 }, { status: { $exists: false } }]
+    }).sort({ _id: -1 })
+
+    if (user.role === 'nhomdich') {
+      history = await LichSuCoin.find({ user: userId }).sort({ _id: -1 })
+    }
+    const historyjson = await Promise.all(
+      history.map(async h => {
+        const userh = await User.findById(h.user)
+        return {
+          _id: h._id,
+          content: h.content,
+          user: userh.username,
+          userid: userh._id,
+          date: moment(h.date)
+            .tz('Asia/Ho_Chi_Minh')
+            .format('DD/MM/YYYY HH:mm:ss'),
+          method: h.method,
+          quydoi: h.coin * 1000,
+          stk: userh.banking[0].sotaikhoan,
+          nganhang: userh.banking[0].phuongthuc,
+          coin: h.coin
+        }
+      })
+    )
+    res.render('historycoin', {
+      historyjson,
+      user,
+      isAdmin: user.role === 'admin'
+    })
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách thể loại:', error)
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi lấy danh sách thể loại' })
+  }
+})
+
+router.get('/lichsucoin/:userid', async (req, res) => {
+  try {
+    const userId = req.params.userid
+    const user = await User.findById(userId)
+    if (!user) {
+      res.status(403).json({ message: 'không tìm thấy user' })
+    }
+
+    const historyjson = await Promise.all(
+      user.lichsucoin.map(async p => {
+        const h = await LichSuCoin.findById(p)
+        const userh = await User.findById(h.user)
+        return {
+          _id: h._id,
+          content: h.content,
+          user: userh.username,
+          userid: userh._id,
+          date: moment(h.date)
+            .tz('Asia/Ho_Chi_Minh')
+            .format('DD/MM/YYYY HH:mm:ss'),
+          method: h.method,
+          coin: h.coin
+        }
+      })
+    )
+    res.json(historyjson)
   } catch (error) {
     console.error('Lỗi khi lấy danh sách thể loại:', error)
     res.status(500).json({ error: 'Đã xảy ra lỗi khi lấy danh sách thể loại' })

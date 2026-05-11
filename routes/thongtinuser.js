@@ -19,6 +19,19 @@ router.get('/getfulluser', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+router.post('/postcoin/:userid', async (req, res) => {
+  try {
+    const userid = req.params.userid
+    const { coin } = req.body
+    const user = await User.findById(userid)
+    user.coin += parseFloat(coin)
+    await user.save()
+    res.json(user)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
 
 router.post('/register', async (req, res) => {
   try {
