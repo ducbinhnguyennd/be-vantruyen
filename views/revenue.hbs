@@ -12,7 +12,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<!-- My CSS -->
 	<title>Revenue</title>
-<style>
+	<style>
 		@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap');
 
 		* {
@@ -656,57 +656,52 @@
 	</div>
 
 	<script>
-		const fetchRevenueData = async (startDate, endDate) => {
-			 let url = '/getrevenue';
-            if (startDate && endDate) {
-                url += `?startDate=${startDate}&endDate=${endDate}`;
-            }
-
-            const response = await fetch(url);
-            const data = await response.json();
-            return data;
-		};
-
-		const updateChart = async () => {
-			const startDate = document.getElementById('startDate').value;
-			const endDate = document.getElementById('endDate').value;
-			const data = await fetchRevenueData(startDate, endDate);
-
-			const dates = data.map(item => item.date);
-			const amounts = data.map(item => item.totalAmount);
-
-			const ctx = document.getElementById('revenueChart').getContext('2d');
-
-			// Phá hủy instance biểu đồ trước nếu nó tồn tại
-			if (window.revenueChart) {
-				window.revenueChart.destroy();
+		const fetchRevenueData=async (startDate,endDate) => {
+			let url='/getrevenue';
+			if(startDate&&endDate) {
+				url+=`?startDate=${startDate}&endDate=${endDate}`;
 			}
 
-			createRevenueChart(dates, amounts);
+			const response=await fetch(url);
+			const data=await response.json();
+			return data;
 		};
 
-		const initializeChart = async () => {
-			const startDateInput = document.getElementById('startDate');
-			const endDateInput = document.getElementById('endDate');
+		const updateChart=async () => {
+			const startDate=document.getElementById('startDate').value;
+			const endDate=document.getElementById('endDate').value;
+			const data=await fetchRevenueData(startDate,endDate);
 
-			const startDate = startDateInput ? startDateInput.value : null;
-			const endDate = endDateInput ? endDateInput.value : null;
-			 const data = await fetchRevenueData(startDate, endDate);
-			const mainContent = document.querySelector("#reve");
-			const revenueChartDiv = document.createElement('div');
+			const dates=data.map(item => item.date);
+			const amounts=data.map(item => item.totalAmount);
+
+			const ctx=document.getElementById('revenueChart').getContext('2d');
+
+			createRevenueChart(dates,amounts);
+		};
+
+		const initializeChart=async () => {
+			const startDateInput=document.getElementById('startDate');
+			const endDateInput=document.getElementById('endDate');
+
+			const startDate=startDateInput? startDateInput.value:null;
+			const endDate=endDateInput? endDateInput.value:null;
+			const data=await fetchRevenueData(startDate,endDate);
+			const mainContent=document.querySelector("#reve");
+			const revenueChartDiv=document.createElement('div');
 			revenueChartDiv.classList.add('revenue-chart');
-			revenueChartDiv.innerHTML = `<canvas id="revenueChart" width="800" height="400"></canvas>`;
-			mainContent.innerHTML = '';
+			revenueChartDiv.innerHTML=`<canvas id="revenueChart" width="800" height="400"></canvas>`;
+			mainContent.innerHTML='';
 			mainContent.appendChild(revenueChartDiv);
 
-			const dates = data.map(item => item.date);
-			const amounts = data.map(item => item.totalAmount);
-			createRevenueChart(dates, amounts);
+			const dates=data.map(item => item.date);
+			const amounts=data.map(item => item.totalAmount);
+			createRevenueChart(dates,amounts);
 		};
 
-		const createRevenueChart = (dates, amounts) => {
-			const ctx = document.getElementById('revenueChart').getContext('2d');
-			window.revenueChart = new Chart(ctx, {
+		const createRevenueChart=(dates,amounts) => {
+			const ctx=document.getElementById('revenueChart').getContext('2d');
+			window.revenueChart=new Chart(ctx,{
 				type: 'line',
 				data: {
 					labels: dates,
@@ -725,14 +720,14 @@
 					}
 				}
 			});
-			const totalRevenue = amounts.reduce((acc, curr) => acc + curr, 0);
+			const totalRevenue=amounts.reduce((acc,curr) => acc+curr,0);
 
-            // Hiển thị tổng doanh thu
-            document.getElementById('totalRevenue').textContent = `Total Revenue: ${totalRevenue.toFixed(2)}$`
+			// Hiển thị tổng doanh thu
+			document.getElementById('totalRevenue').textContent=`Total Revenue: ${totalRevenue.toFixed(2)}$`
 		};
 
 		// Initialize chart on page load
-		document.addEventListener('DOMContentLoaded', function () {
+		document.addEventListener('DOMContentLoaded',function() {
 			initializeChart()
 		});
 	</script>

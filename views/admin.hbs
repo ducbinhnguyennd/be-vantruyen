@@ -994,14 +994,9 @@
 
 			const ctx=document.getElementById('revenueChart').getContext('2d');
 
-			// Phá hủy instance biểu đồ trước nếu nó tồn tại
-			if(window.revenueChart) {
-				window.revenueChart.destroy();
-			}
 
 			createRevenueChart(dates,amounts);
 		};
-
 
 		const initializeChart=async () => {
 			const startDateInput=document.getElementById('startDate');
