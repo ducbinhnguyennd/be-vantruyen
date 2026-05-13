@@ -1,235 +1,246 @@
-const router = require ('express').Router ();
-const User = require ('../models/UserModel');
-const paypal = require ('paypal-rest-sdk');
-const moment = require ('moment');
-const momenttimezone = require ('moment-timezone');
-const Payment = require ('../models/PaymentModel');
+const router = require('express').Router()
+const User = require('../models/UserModel')
+const paypal = require('paypal-rest-sdk')
+const moment = require('moment')
+const momenttimezone = require('moment-timezone')
+const Payment = require('../models/PaymentModel')
 const LichSuCoin = require('../models/LichSuCoinModel')
 
-paypal.configure ({
+paypal.configure({
   mode: 'sandbox',
-  client_id: 'AcbjyBYvtzo-AAFInnvDR-1Q1No93loj45abu86uTx_7z5pO9gMT8UOUxBVSCDeAdjExHR6zmo9EIddv',
-  client_secret: 'ECKZTF9b2khQ39W47YGtPxa6f41G3MoUf6nNKKVepoUFdL8rmI0EoY7XE-m5uPYaNZFihEmk_cQaSALJ',
-});
+  client_id:
+    'AcbjyBYvtzo-AAFInnvDR-1Q1No93loj45abu86uTx_7z5pO9gMT8UOUxBVSCDeAdjExHR6zmo9EIddv',
+  client_secret:
+    'ECKZTF9b2khQ39W47YGtPxa6f41G3MoUf6nNKKVepoUFdL8rmI0EoY7XE-m5uPYaNZFihEmk_cQaSALJ'
+})
 
-router.post ('/pay/:_userId', async (req, res) => {
+router.post('/pay/:_userId', async (req, res) => {
   try {
-    const {totalAmount, currency} = req.body;
-    const userId = req.params._userId;
-    let coin = totalAmount * 10;
-    const success = 'đợi thanh toán';
-    const vietnamTime = momenttimezone ().add (7, 'hours').toDate ();
-    const paymentData = new Payment ({
+    const { totalAmount, currency } = req.body
+    const userId = req.params._userId
+    let coin = totalAmount * 10
+    const success = 'đợi thanh toán'
+    const vietnamTime = momenttimezone().add(7, 'hours').toDate()
+    const paymentData = new Payment({
       userID: userId,
       currency: currency,
       totalAmount: totalAmount,
       coin: coin,
       date: vietnamTime,
-      success: success,
-    });
+      success: success
+    })
 
     const createPaymentJson = {
       intent: 'sale',
       payer: {
-        payment_method: 'paypal',
+        payment_method: 'paypal'
       },
       transactions: [
         {
           amount: {
             total: totalAmount,
-            currency: currency,
-          },
-        },
+            currency: currency
+          }
+        }
       ],
       redirect_urls: {
         return_url: `https://be-vantruyen.vercel.app/success/${paymentData._id}`,
-        cancel_url: `https://be-vantruyen.vercel.app/cancel`,
-      },
-    };
+        cancel_url: `https://be-vantruyen.vercel.app/cancel`
+      }
+    }
 
-    const user = await User.findById (userId);
+    const user = await User.findById(userId)
 
-    paypal.payment.create (createPaymentJson, async (error, payment) => {
+    paypal.payment.create(createPaymentJson, async (error, payment) => {
       if (error) {
         // Bắt lỗi và trả về response 500
-        console.error ('Lỗi khi tạo thanh toán:', error);
+        console.error('Lỗi khi tạo thanh toán:', error)
         return res
-          .status (500)
-          .json ({error: 'Đã xảy ra lỗi khi tạo thanh toán.'});
+          .status(500)
+          .json({ error: 'Đã xảy ra lỗi khi tạo thanh toán.' })
       } else {
         for (let i = 0; i < payment.links.length; i++) {
           if (!user) {
             // Trả về response 500 nếu không tìm thấy người dùng
-            return res.status (500).json ('Không tìm thấy người dùng');
+            return res.status(500).json('Không tìm thấy người dùng')
           } else {
             if (payment.links[i].rel === 'approval_url') {
-              await paymentData.save ();
-              user.payment.push (paymentData._id);
-              await user.save ();
+              await paymentData.save()
+              user.payment.push(paymentData._id)
+              await user.save()
               // Trả về URL để chuyển hướng đến trang thanh toán PayPal
-              return res.json (payment.links[i].href);
+              return res.json(payment.links[i].href)
             }
           }
         }
       }
-    });
+    })
   } catch (error) {
-    console.error ('Lỗi khi xử lý thanh toán:', error);
-    res.status (500).json ({error: 'Đã xảy ra lỗi khi xử lý thanh toán.'});
+    console.error('Lỗi khi xử lý thanh toán:', error)
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi xử lý thanh toán.' })
   }
-});
+})
 
-router.get ('/success/:id', async (req, res) => {
+router.get('/success/:id', async (req, res) => {
   try {
-    const payerId = req.query.PayerID;
-    const paymentId = req.query.paymentId;
-    const id = req.params.id;
-    let success = 'thanh toán thành công';
+    const payerId = req.query.PayerID
+    const paymentId = req.query.paymentId
+    const id = req.params.id
+    let success = 'thanh toán thành công'
 
     const executePaymentJson = {
-      payer_id: payerId,
-    };
+      payer_id: payerId
+    }
 
-    paypal.payment.execute (
+    paypal.payment.execute(
       paymentId,
       executePaymentJson,
       async (error, payment) => {
         if (error) {
-          console.error (error.response);
-          throw error;
+          console.error(error.response)
+          throw error
         } else {
-          const updatePayment = await Payment.findOneAndUpdate (
-            {_id: id},
-            {success: success},
-            {new: true}
-          );
+          const updatePayment = await Payment.findOneAndUpdate(
+            { _id: id },
+            { success: success },
+            { new: true }
+          )
 
           if (!updatePayment) {
-            res.status (404).json ({message: 'Không tìm thấy thanh toán.'});
+            res.status(404).json({ message: 'Không tìm thấy thanh toán.' })
           }
-          const totalAmount = updatePayment.totalAmount;
-          const userId = updatePayment.userID;
+          const totalAmount = updatePayment.totalAmount
+          const userId = updatePayment.userID
 
-          const user = await User.findById (userId);
-          const updatedCoin = totalAmount * 10 + (user.coin || 0);
+          const user = await User.findById(userId)
+          const updatedCoin = totalAmount * 10 + (user.coin || 0)
 
-          await User.findOneAndUpdate (
-            {_id: userId},
-            {coin: updatedCoin},
-            {new: true}
-          );
+          await User.findOneAndUpdate(
+            { _id: userId },
+            { coin: updatedCoin },
+            { new: true }
+          )
 
-          const lichsucoinnhomdich = new LichSuCoin ({
+          const lichsucoinnhomdich = new LichSuCoin({
             content: `Nạp tiền mua coin`,
             coin: totalAmount * 10,
             user: user._id,
             method: 'add',
-            date: new Date (),
-          });
+            date: new Date()
+          })
           await lichsucoinnhomdich.save()
           user.lichsucoin.push(lichsucoinnhomdich._id)
           await user.save()
 
-          res.render ('successthanhtoan', {
-            message: 'Thanh toán thành công mời quay trở lại app!',
-          });
+          res.render('successthanhtoan', {
+            message: 'Thanh toán thành công mời quay trở lại app!'
+          })
         }
       }
-    );
+    )
   } catch (error) {
-    console.error ('Lỗi khi xử lý thanh toán:', error);
-    res.status (500).json ({error: 'Đã xảy ra lỗi khi xử lý thanh toán.'});
+    console.error('Lỗi khi xử lý thanh toán:', error)
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi xử lý thanh toán.' })
   }
-});
+})
 
-router.get ('/paymentdetail/:userid', async (req, res) => {
+router.get('/paymentdetail/:userid', async (req, res) => {
   try {
-    const userid = req.params.userid;
-    const user = await User.findById (userid);
+    const userid = req.params.userid
+    const user = await User.findById(userid)
     if (!user) {
-      return res.status (404).json ({message: 'Không tìm thấy người dùng'});
+      return res.status(404).json({ message: 'Không tìm thấy người dùng' })
     }
-    const paymentDetails = await Payment.find ({
+    const paymentDetails = await Payment.find({
       userID: userid,
-      success: 'thanh toán thành công',
-    });
+      success: 'thanh toán thành công'
+    })
 
     if (!paymentDetails || paymentDetails.length === 0) {
       return res
-        .status (404)
-        .json ({message: 'Không tìm thấy thông tin thanh toán'});
+        .status(404)
+        .json({ message: 'Không tìm thấy thông tin thanh toán' })
     }
 
     // Phản hồi với dữ liệu theo cấu trúc mô hình
-    const formattedPaymentDetails = paymentDetails.map (paymentDetail => {
-      const formattedDate = moment (paymentDetail.date).format (
+    const formattedPaymentDetails = paymentDetails.map(paymentDetail => {
+      const formattedDate = moment(paymentDetail.date).format(
         'DD/MM/YYYY HH:mm:ss'
-      );
+      )
       return {
         userID: paymentDetail.userID,
         currency: paymentDetail.currency,
         totalAmount: paymentDetail.totalAmount,
         coin: paymentDetail.coin,
         date: formattedDate,
-        success: paymentDetail.success,
-      };
-    });
+        success: paymentDetail.success
+      }
+    })
 
-    res.json (formattedPaymentDetails);
+    res.json(formattedPaymentDetails)
   } catch (error) {
-    console.error ('Lỗi lấy lịch sử giao dịch:', error);
-    res.status (500).json ({error: 'Đã xảy ra lỗi lấy lịch sử giao dịch.'});
+    console.error('Lỗi lấy lịch sử giao dịch:', error)
+    res.status(500).json({ error: 'Đã xảy ra lỗi lấy lịch sử giao dịch.' })
   }
-});
+})
 
-router.get ('/getrevenue', async (req, res) => {
+router.get('/getrevenue', async (req, res) => {
   try {
-    const startDate = req.query.startDate;
-    const endDate = req.query.endDate;
+    const startDate = new Date(req.query.startDate + 'T00:00:00.000Z')
+    const endDate = new Date(req.query.endDate + 'T23:59:59.999Z')
 
-    // Thực hiện truy vấn dựa trên khoảng ngày
-    const payments = await Payment.find ({
+    console.log(startDate)
+    console.log(endDate)
+
+    const payments = await Payment.find({
       success: 'thanh toán thành công',
-      date: {$gte: startDate, $lte: endDate},
-    });
-    res.json (payments);
+      date: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    })
+
+    console.log(payments)
+
+    res.json(payments)
   } catch (error) {
-    console.error ('Đã xảy ra lỗi:', error);
-    res.status (500).json ({message: 'Đã xảy ra lỗi.'});
+    console.error('Đã xảy ra lỗi:', error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
-});
+})
 
-router.get ('/cancel', (req, res) => {
-  res.render ('successthanhtoan', {
-    message: 'Thanh toán đã bị hủy mời quay trở lại app!',
-  });
-});
 
-router.get ('/topUsers', async (req, res) => {
+router.get('/cancel', (req, res) => {
+  res.render('successthanhtoan', {
+    message: 'Thanh toán đã bị hủy mời quay trở lại app!'
+  })
+})
+
+router.get('/topUsers', async (req, res) => {
   try {
-    const topUsers = await Payment.aggregate ([
+    const topUsers = await Payment.aggregate([
       {
-        $match: {success: 'thanh toán thành công'},
+        $match: { success: 'thanh toán thành công' }
       },
       {
         $group: {
           _id: '$userID',
-          totalAmount: {$sum: '$totalAmount'},
-        },
+          totalAmount: { $sum: '$totalAmount' }
+        }
       },
       {
-        $sort: {totalAmount: -1},
+        $sort: { totalAmount: -1 }
       },
       {
-        $limit: 10,
-      },
-    ]);
+        $limit: 10
+      }
+    ])
 
-    const extendedTopUsers = await Promise.all (
-      topUsers.map (async user => {
-        const userInfo = await User.findById (user._id).select (
+    const extendedTopUsers = await Promise.all(
+      topUsers.map(async user => {
+        const userInfo = await User.findById(user._id).select(
           'username role avatar'
-        );
+        )
 
         return {
           userID: user._id,
@@ -237,16 +248,16 @@ router.get ('/topUsers', async (req, res) => {
           role: userInfo.role,
           avatar: userInfo.avatar || '',
           totalAmount: user.totalAmount,
-          coin: user.totalAmount * 10,
-        };
+          coin: user.totalAmount * 10
+        }
       })
-    );
+    )
 
-    res.json (extendedTopUsers);
+    res.json(extendedTopUsers)
   } catch (error) {
-    console.error ('Lỗi khi lấy top người dùng:', error);
-    res.status (500).json ({error: 'Đã xảy ra lỗi khi lấy top người dùng'});
+    console.error('Lỗi khi lấy top người dùng:', error)
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi lấy top người dùng' })
   }
-});
+})
 
-module.exports = router;
+module.exports = router
