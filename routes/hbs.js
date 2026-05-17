@@ -239,8 +239,8 @@ router.get('/historyscreen', async (req, res) => {
             .format('DD/MM/YYYY HH:mm:ss'),
           method: h.method,
           quydoi: h.coin * 1000,
-          stk: userh.banking[0].sotaikhoan,
-          nganhang: userh.banking[0].phuongthuc,
+          stk: userh.banking[0]?.sotaikhoan,
+          nganhang: userh.banking[0]?.phuongthuc,
           coin: h.coin
         }
       })
